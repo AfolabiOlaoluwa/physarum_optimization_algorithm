@@ -38,21 +38,14 @@ for agent in range(N):
         # Distribute concentration to neighbors
         for neighbor in neighbors:
             next_concentration = plasmodium[agent, current_node] / len(neighbors) if len(neighbors) > 0 else 0
-
-            # Clamp the concentration to a reasonable value
-            next_concentration = min(next_concentration, 5000)  # threshold limit set to 5,000
+            next_concentration = min(next_concentration, 1000000)
 
             if next_concentration > slime_concentration[0, neighbor]:
                 slime_concentration[0, neighbor] = next_concentration
                 queue.put((-next_concentration, neighbor))
 
-            plasmodium[agent, neighbor] += next_concentration
-
-        plasmodium[agent, :] *= (1 - evaporation_rate)
-
-    # Evaporate slime concentration for this agent
-    slime_concentration *= (1 - evaporation_rate)
-
+            # Modified line with both accumulation limit and immediate evaporation
+            plasmodium[agent, neighbor] = min(plasmodium[agent, neighbor] + next_concentration, 1.0) * (1 - evaporation_rate)
 
 # Aggregate slime concentrations across agents
 slime_concentration = np.sum(plasmodium, axis=0)
